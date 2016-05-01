@@ -1,10 +1,9 @@
 package com.example.goon.connection;
 
-import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.os.AsyncTask;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
@@ -14,15 +13,13 @@ import android.widget.RadioButton;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import org.json.JSONException;
-import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,28 +28,38 @@ import cz.msebera.android.httpclient.NameValuePair;
 import cz.msebera.android.httpclient.client.HttpClient;
 import cz.msebera.android.httpclient.client.entity.UrlEncodedFormEntity;
 import cz.msebera.android.httpclient.client.methods.HttpPost;
-import cz.msebera.android.httpclient.entity.StringEntity;
 import cz.msebera.android.httpclient.impl.client.DefaultHttpClient;
 import cz.msebera.android.httpclient.message.BasicNameValuePair;
-import cz.msebera.android.httpclient.protocol.HTTP;
 
 public class SingUp extends AppCompatActivity {
     private Button buttonConnection;
     private TextView text;
-    private  EditText username;
+    private EditText username;
     private EditText password;
     private EditText email;
     private EditText age;
-    private String usernameS="";
-    private String passwordS="";
-    private String emailS="";
-    private String ageS="";
+    private String usernameS = "";
+    private String passwordS = "";
+    private String emailS = "";
+    private String ageS = "";
     private RadioButton citizenButton;
-    private String citizen="" ;
+    private String citizen = "";
     private User user;
     private Switch aSwitchch;
     private TextView loginLink;
 
+    private static String convertInputStreamToString(InputStream inputStream) throws IOException {
+
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+        String line = "";
+        String result = "";
+        while ((line = bufferedReader.readLine()) != null) {
+            result += line;
+        }
+        inputStream.close();
+        return result;
+
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,17 +68,17 @@ public class SingUp extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        text= (TextView)findViewById(R.id.textView);
-        buttonConnection= (Button) findViewById(R.id.button);
+        text = (TextView) findViewById(R.id.textView);
+        buttonConnection = (Button) findViewById(R.id.button);
         username = (EditText) findViewById(R.id.userName);
         password = (EditText) findViewById(R.id.password);
         email = (EditText) findViewById(R.id.email);
         age = (EditText) findViewById(R.id.age);
         citizenButton = (RadioButton) findViewById(R.id.citizen);
-        loginLink= (TextView) findViewById(R.id.link_login);
+        loginLink = (TextView) findViewById(R.id.link_login);
 
 
-        final DBHandler db=new DBHandler(this);
+        final DBHandler db = new DBHandler(this);
 
 
         buttonConnection.setOnClickListener(new View.OnClickListener() {
@@ -81,15 +88,15 @@ public class SingUp extends AppCompatActivity {
 
                 if (checkInternetConnection()) {
 
-                     if(validate()) {
+                    if (validate()) {
 
-                       // new HttpAsyncTask().execute("https://goonapp-dev.herokuapp.com/user");
+                        // new HttpAsyncTask().execute("https://goonapp-dev.herokuapp.com/user");
 
-                         db.addUser(new User(9, "dana", "dana", "dana@example.com", 22, "lyon"));
-                         String s=db.getUser(9).getPassword().toString();
-                         Toast.makeText(getBaseContext(), s, Toast.LENGTH_LONG).show();
+                        db.addUser(new User(9, "dana", "dana", "dana@example.com", 22, "lyon"));
+                        String s = db.getUser(9).getPassword();
+                        Toast.makeText(getBaseContext(), s, Toast.LENGTH_LONG).show();
 
-                    }else{
+                    } else {
                         Toast.makeText(getBaseContext(), "Enter some data!", Toast.LENGTH_LONG).show();
                     }
                 }
@@ -106,9 +113,8 @@ public class SingUp extends AppCompatActivity {
         });
     }
 
-
-    public  String POST(final String url) throws JSONException, IOException {
-        InputStream inputStream= null;
+    public String POST(final String url) throws JSONException, IOException {
+        InputStream inputStream = null;
         String result = "";
 
 
@@ -116,32 +122,32 @@ public class SingUp extends AppCompatActivity {
 
             List<NameValuePair> pairs = new ArrayList<NameValuePair>();
 
-            pairs.add(new BasicNameValuePair("username",username.getText().toString()));
-            pairs.add(new BasicNameValuePair("email",email.getText().toString()));
-            pairs.add(new BasicNameValuePair("password",password.getText().toString()));
-            pairs.add(new BasicNameValuePair("age",age.getText().toString()));
-            pairs.add(new BasicNameValuePair("citizen","lyon"));
+            pairs.add(new BasicNameValuePair("username", username.getText().toString()));
+            pairs.add(new BasicNameValuePair("email", email.getText().toString()));
+            pairs.add(new BasicNameValuePair("password", password.getText().toString()));
+            pairs.add(new BasicNameValuePair("age", age.getText().toString()));
+            pairs.add(new BasicNameValuePair("citizen", "lyon"));
 
-            HttpClient httpClient= new DefaultHttpClient();
-            HttpPost httpPost= new HttpPost(url);
+            HttpClient httpClient = new DefaultHttpClient();
+            HttpPost httpPost = new HttpPost(url);
 
             httpPost.setEntity(new UrlEncodedFormEntity(pairs));
 
             //httpPost.setHeader("POST","/user");
             //httpPost.setHeader("Content-type", "application/x-www-from-urlencoded");
-           // httpPost.setHeader("Accept","application/x-www-form-urlencoded");
+            // httpPost.setHeader("Accept","application/x-www-form-urlencoded");
 
-            HttpResponse httpResponse= httpClient.execute(httpPost);
+            HttpResponse httpResponse = httpClient.execute(httpPost);
 
-            inputStream=httpResponse.getEntity().getContent();
+            inputStream = httpResponse.getEntity().getContent();
 
-            if (inputStream!=null){
-                result=convertInputStreamToString(inputStream);
+            if (inputStream != null) {
+                result = convertInputStreamToString(inputStream);
 
-            }else{
-                result="Muy mal!";
+            } else {
+                result = "Muy mal!";
             }
-        }catch(Exception e){
+        } catch (Exception e) {
 
             Log.d("InputStream", e.getLocalizedMessage());
 
@@ -149,28 +155,36 @@ public class SingUp extends AppCompatActivity {
         return result;
     }
 
-    private static String convertInputStreamToString(InputStream inputStream)throws IOException{
-
-        BufferedReader bufferedReader=new BufferedReader(new InputStreamReader(inputStream));
-        String line = "";
-        String result = "";
-        while((line=bufferedReader.readLine())!=null){
-            result+=line;
-        }
-        inputStream.close();
-        return result;
-
-    }
-
-    private boolean validate(){
-        if(username.getText().toString().trim().equals(""))
+    private boolean validate() {
+        if (username.getText().toString().trim().equals(""))
             return false;
-        else if(password.getText().toString().trim().equals(""))
+        else if (password.getText().toString().trim().equals(""))
             return false;
-        else if(email.getText().toString().trim().equals(""))
+        else if (email.getText().toString().trim().equals(""))
             return false;
         else
             return true;
+    }
+
+    private boolean checkInternetConnection() {
+        // get Connectivity Manager object to check connection
+        ConnectivityManager connec = (ConnectivityManager) getSystemService(getBaseContext().CONNECTIVITY_SERVICE);
+
+        // Check for network connections
+        if (connec.getNetworkInfo(0).getState() == android.net.NetworkInfo.State.CONNECTED ||
+
+                connec.getNetworkInfo(0).getState() == android.net.NetworkInfo.State.CONNECTING ||
+                connec.getNetworkInfo(1).getState() == android.net.NetworkInfo.State.CONNECTING ||
+                connec.getNetworkInfo(1).getState() == android.net.NetworkInfo.State.CONNECTED) {
+            //  Toast.makeText(this, " Connected ", Toast.LENGTH_LONG).show();
+            return true;
+        } else if (
+                connec.getNetworkInfo(0).getState() == android.net.NetworkInfo.State.DISCONNECTED ||
+                        connec.getNetworkInfo(1).getState() == android.net.NetworkInfo.State.DISCONNECTED) {
+            Toast.makeText(this, " Not Connected ", Toast.LENGTH_LONG).show();
+            return false;
+        }
+        return false;
     }
 
     private class HttpAsyncTask extends AsyncTask<String, Void, String> {
@@ -188,6 +202,7 @@ public class SingUp extends AppCompatActivity {
 
             return null;
         }
+
         // onPostExecute displays the results of the AsyncTask.
         @Override
         protected void onPostExecute(String result) {
@@ -195,26 +210,6 @@ public class SingUp extends AppCompatActivity {
             Toast.makeText(getBaseContext(), result, Toast.LENGTH_LONG).show();
         }
 
-    }
-    private boolean checkInternetConnection() {
-        // get Connectivity Manager object to check connection
-        ConnectivityManager connec =(ConnectivityManager)getSystemService(getBaseContext().CONNECTIVITY_SERVICE);
-
-        // Check for network connections
-        if ( connec.getNetworkInfo(0).getState() == android.net.NetworkInfo.State.CONNECTED ||
-
-                connec.getNetworkInfo(0).getState() == android.net.NetworkInfo.State.CONNECTING ||
-                connec.getNetworkInfo(1).getState() == android.net.NetworkInfo.State.CONNECTING ||
-                connec.getNetworkInfo(1).getState() == android.net.NetworkInfo.State.CONNECTED ) {
-            //  Toast.makeText(this, " Connected ", Toast.LENGTH_LONG).show();
-            return true;
-        }else if (
-                connec.getNetworkInfo(0).getState() == android.net.NetworkInfo.State.DISCONNECTED ||
-                        connec.getNetworkInfo(1).getState() == android.net.NetworkInfo.State.DISCONNECTED  ) {
-            Toast.makeText(this, " Not Connected ", Toast.LENGTH_LONG).show();
-            return false;
-        }
-        return false;
     }
 
 }
